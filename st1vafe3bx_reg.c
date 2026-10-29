@@ -2364,13 +2364,32 @@ int32_t st1vafe3bx_fifo_mode_set(const stmdev_ctx_t *ctx,
       fifo_wtm.fth = val.watermark;
     }
 
-    ret += st1vafe3bx_write_reg(ctx, ST1VAFE3BX_FIFO_BATCH_DEC,
-                                (uint8_t *)&fifo_batch, 1);
-    ret += st1vafe3bx_write_reg(ctx, ST1VAFE3BX_FIFO_WTM,
-                                (uint8_t *)&fifo_wtm, 1);
-    ret += st1vafe3bx_write_reg(ctx, ST1VAFE3BX_FIFO_CTRL,
-                                (uint8_t *)&fifo_ctrl, 1);
-    ret += st1vafe3bx_write_reg(ctx, ST1VAFE3BX_CTRL4, (uint8_t *)&ctrl4, 1);
+    ret = st1vafe3bx_write_reg(ctx, ST1VAFE3BX_FIFO_BATCH_DEC,
+                               (uint8_t *)&fifo_batch, 1);
+    if (ret == 0)
+    {
+      ret = st1vafe3bx_write_reg(ctx, ST1VAFE3BX_FIFO_WTM,
+                                 (uint8_t *)&fifo_wtm, 1);
+    }
+    if (val.operation != ST1VAFE3BX_FIFO_OFF)
+    {
+      /* FIFO_EN must be set before writing FIFO_MODE. */
+      if (ret == 0)
+      {
+        ret = st1vafe3bx_write_reg(ctx, ST1VAFE3BX_CTRL4, (uint8_t *)&ctrl4, 1);
+      }
+      if (ret == 0)
+      {
+        ret = st1vafe3bx_write_reg(ctx, ST1VAFE3BX_FIFO_CTRL,
+                                   (uint8_t *)&fifo_ctrl, 1);
+      }
+    }
+    else
+    {
+      ret += st1vafe3bx_write_reg(ctx, ST1VAFE3BX_FIFO_CTRL,
+                                  (uint8_t *)&fifo_ctrl, 1);
+      ret += st1vafe3bx_write_reg(ctx, ST1VAFE3BX_CTRL4, (uint8_t *)&ctrl4, 1);
+    }
   }
 
   return ret;
